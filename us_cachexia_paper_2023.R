@@ -3435,3 +3435,62 @@ Cachexia %>% left_join(CAN_Drug_Histories) %>%
 
 
 # ---------------
+
+# Hospitalization around cancer onset ? ------------------
+# Target cancers
+
+PONS_Demographics <- fread("PONS Demographics.txt")
+
+PONS_Demographics <- PONS_Demographics %>% filter(!is.na(cancer_onset))
+
+PONS_Demographics <- PONS_Demographics %>% filter(age>=18) %>% 
+  select(patid, weight, age, died, cancer_onset) 
+
+New_Primary_Cancer_Box <- fread("New_Primary_Cancer_Box.txt", sep="\t")
+
+PONS_Demographics <- New_Primary_Cancer_Box %>% inner_join(PONS_Demographics) %>% rename("diagnosis"="Primary_Cancer")
+
+
+Pats_to_track_BMI <- PONS_Demographics  %>% 
+  select(patid, weight, diagnosis, died , cancer_onset) 
+
+
+Months_lookup <- fread("Months_lookup.txt",  integer64 = "character", stringsAsFactors = F)
+
+Months_lookup$Month <- as.character(
+  format(
+    as.Date(
+      paste0(Months_lookup$Month,"-1")
+      ), "%Y-%m"
+    )
+  )
+
+
+Pats_to_track_BMI <- Pats_to_track_BMI %>% mutate(cancer_onset=as.character(cancer_onset)) %>% mutate(cancer_onset=str_sub(cancer_onset, 1L, 7L))
+
+Pats_to_track_BMI <- Pats_to_track_BMI %>% left_join(
+  Months_lookup, by=c("cancer_onset"="Month")
+  ) %>% select(patid, Exact_Month) %>% distinct() %>% rename("Month_Min"="Exact_Month")
+
+
+CAN_Drug_Histories <- fread("CAN Drug Histories.txt")
+CAN_Drug_Histories <- CAN_Drug_Histories %>% inner_join(Cachexia %>% select(patid), by=c("patient"="patid"))
+CAN_Drug_Histories <- gather(CAN_Drug_Histories, Month, Treat, month1:month60, factor_key=TRUE)
+CAN_Drug_Histories <- CAN_Drug_Histories  %>% filter(Treat!="-") %>% select(-c(disease, weight)) %>% distinct()
+CAN_Drug_Histories <- CAN_Drug_Histories %>% distinct()
+CAN_Drug_Histories$Month <- parse_number(as.character(CAN_Drug_Histories$Month))
+
+CAN_Drug_Histories <- CAN_Drug_Histories %>% filter(grepl("352", Treat)|grepl("353", Treat)) %>% group_by(patient) %>%
+  filter(Month==min(Month))
+
+CAN_Drug_Histories <- CAN_Drug_Histories %>% select(-Treat)
+names(CAN_Drug_Histories)[1] <- "patid"
+names(CAN_Drug_Histories)[2] <- "Hospital"
+
+
+Pats_to_track_BMI %>% left_join(CAN_Drug_Histories) %>% 
+  mutate(gap=Month_Min-Hospital) %>%
+  filter(abs(gap)<2) 
+  
+
+# --------
