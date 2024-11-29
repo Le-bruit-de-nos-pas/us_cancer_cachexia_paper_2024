@@ -8,9 +8,9 @@ library(lubridate)
 library(openxlsx)
 
 # Load whenever needed
-# library(survminer)
-# library(survival)
-# library(ggsurvfit)
+library(survminer)
+ library(survival)
+ library(ggsurvfit)
 # library(ggrepel)
 # library(lessR)
 
@@ -450,7 +450,7 @@ pairwise.wilcox.test(temp$min, temp$group, p.adjust.method = "bonferroni")
 # P value adjustment method: bonferroni 
 
 	
-temp %>%  select(group, min) %>%
+image <- temp %>%  select(group, min) %>%
   filter(min<50 & min>10) %>%
    mutate(group=factor(group, levels=c("None" ,"Pred", "Dx"))) %>%
   ggplot(aes(group, min, colour=group, fill=group )) +
@@ -464,6 +464,8 @@ temp %>%  select(group, min) %>%
   scale_colour_manual(values=c("honeydew4", "midnightblue", "firebrick"  )) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 
+
+ ggsave(file="fig_sup2_b.svg", plot=image, width=10, height=8)
 
 
 
@@ -494,7 +496,7 @@ wilcox.test(temp$min[temp$cancer_metastasis==0], temp$min[temp$cancer_metastasis
 # alternative hypothesis: true location shift is not equal to 0
 
 
-temp %>%  select(cancer_metastasis, min) %>%
+image <- temp %>%  select(cancer_metastasis, min) %>%
   filter(min<50 & min>10) %>%
   mutate(cancer_metastasis=ifelse(cancer_metastasis==0, "None", "Metastatic")) %>%
    mutate(cancer_metastasis=factor(cancer_metastasis, levels=c("None" ,"Metastatic"))) %>%
@@ -508,6 +510,7 @@ temp %>%  select(cancer_metastasis, min) %>%
   scale_colour_manual(values=c( "midnightblue", "firebrick"  )) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 
+ ggsave(file="fig_sup2_d.svg", plot=image, width=10, height=8)
 
 
 
@@ -555,7 +558,7 @@ pairwise.wilcox.test(temp$drop, temp$group, p.adjust.method = "bonferroni")
 # P value adjustment method: bonferroni 
 
 	
-temp %>%  select(group, drop) %>%
+image <- temp %>%  select(group, drop) %>%
   filter(drop>(-50)) %>%
   mutate(group=factor(group, levels=c("None" ,"Pred", "Dx"))) %>%
   ggplot(aes(group, drop, colour=group, fill=group )) +
@@ -569,6 +572,7 @@ temp %>%  select(group, drop) %>%
   scale_colour_manual(values=c("honeydew4", "midnightblue", "firebrick"  )) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 
+ ggsave(file="fig_sup2_a.svg", plot=image, width=10, height=8)
 
 
 
@@ -588,7 +592,7 @@ wilcox.test(temp$drop[temp$cancer_metastasis==0], temp$drop[temp$cancer_metastas
 
 
 
-temp %>%  select(cancer_metastasis, drop) %>%
+image <- temp %>%  select(cancer_metastasis, drop) %>%
   filter(drop>(-50)) %>%
   mutate(cancer_metastasis=ifelse(cancer_metastasis==0, "None", "Metastatic")) %>%
    mutate(cancer_metastasis=factor(cancer_metastasis, levels=c("None" ,"Metastatic"))) %>%
@@ -602,6 +606,7 @@ temp %>%  select(cancer_metastasis, drop) %>%
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 
 
+ ggsave(file="fig_sup2_c.svg", plot=image, width=10, height=8)
 
 	
 	
@@ -671,7 +676,7 @@ temp %>% group_by(DropG) %>% summarise(n=sd(min, na.rm=T))
 # 3 Drop95    6.24
 
 
-temp %>%  select(DropG, min) %>%
+image <- temp %>%  select(DropG, min) %>%
   filter(min<50 & min>10) %>%
   mutate(DropG=ifelse(DropG=="Drop2_20", ">2% BMI<20",
                       ifelse(DropG=="Drop90", ">10% 12m", ">5% 6m"))) %>%
@@ -686,6 +691,8 @@ temp %>%  select(DropG, min) %>%
   scale_fill_manual(values=c("honeydew4", "midnightblue", "firebrick" )) +
   scale_colour_manual(values=c("honeydew4", "midnightblue", "firebrick"  )) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+
+ ggsave(file="fig_sup2_f.svg", plot=image, width=10, height=8)
 
 
 temp <- temp %>% mutate(drop=100*(min-max)/max)
@@ -728,7 +735,7 @@ pairwise.wilcox.test(temp$drop, temp$DropG, p.adjust.method = "bonferroni")
 
 
 
-temp %>%  select(DropG, drop) %>%
+image <- temp %>%  select(DropG, drop) %>%
   filter(drop>(-60)) %>%
   mutate(DropG=ifelse(DropG=="Drop2_20", ">2% BMI<20",
                       ifelse(DropG=="Drop90", ">10% 12m", ">5% 6m"))) %>%
@@ -744,6 +751,8 @@ temp %>%  select(DropG, drop) %>%
   scale_colour_manual(values=c("honeydew4", "midnightblue", "firebrick"  )) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 
+
+ ggsave(file="fig_sup2_e.svg", plot=image, width=10, height=8)
 
 # ---------------------------------------
 
@@ -1047,13 +1056,21 @@ summary(sfit)
 
 ggsurvplot(sfit)
 
-ggsurvplot(sfit, conf.int=TRUE, pval=TRUE, risk.table=TRUE, 
+image <- ggsurvplot(sfit, conf.int=TRUE, pval=TRUE, risk.table=TRUE, 
            legend.labs=c("None", "Pred", "Dx"), legend.title="Cachexia Status",  
            palette=c("honeydew4", "midnightblue", "firebrick"), 
            title="Kaplan-Meier Curve for Cancer Survival by Cachexia Status", 
            risk.table.height=0.2)
 
+image <- image$plot
 
+image <- image$table
+
+ggsave(file="fig_km_a_table.svg", plot=image, width=8, height=2.5)
+
+
+
+ 
 fit <- coxph(Surv(Survived, status)~group, data=temp)
 
 fit
@@ -1097,11 +1114,20 @@ temp %>% group_by(group) %>% count() %>% rename("n1"="n") %>%
 
 
 
-ggsurvplot(sfit, conf.int=TRUE, pval=TRUE, risk.table=TRUE, 
+image <- ggsurvplot(sfit, conf.int=TRUE, pval=TRUE, risk.table=TRUE, 
            #legend.labs=c("Dx Metastatic", "Dx no mets",  "None Metastatic", "None no mets", "Pred Metastatic", "Pred no mets"), legend.title="Cachexia Status",  
            palette=c("#929baa", "#515967", "#17b7ba", "#1753ba", "coral2", "firebrick"), 
            title="Kaplan-Meier Curve for Cancer Survival by Cachexia & Metastasis Status", 
            risk.table.height=0.3)
+
+
+image <- image$plot
+
+image <- image$table
+
+ggsave(file="fig_km_b_table.svg", plot=image, width=8, height=2.5)
+
+
 
 
 fit <- coxph(Surv(Survived, status)~group, data=temp)
@@ -1246,13 +1272,15 @@ temp %>%
   theme_minimal() +
   xlab("\n Lowest BMI reached") + ylab("Probability of having died \n")
 
-temp %>%
+image <- temp %>%
   filter(min>10 & min <40) %>%
   ggplot(aes(x=min, y=died)) + 
   ylim(0,1) +
   stat_smooth(method="gam", se=TRUE, method.args = list(family=binomial)) +
   theme_minimal() +
   xlab("\n Lowest BMI reached") + ylab("Probability of having died \n")
+
+ ggsave(file="fig_4_c.svg", plot=image, width=10, height=8)
 
 
 temp %>%
@@ -1268,13 +1296,15 @@ temp %>%
 
 
 
-temp %>%
+image <- temp %>%
   filter(drop>(-40)) %>%
   ggplot(aes(x=abs(drop), y=died)) + 
   ylim(0,1) +
   stat_smooth(method="gam", se=TRUE, method.args = list(family=binomial)) +
   theme_minimal() +
   xlab("\n Highest % BMI drop") + ylab("Probability of having died \n")
+
+ ggsave(file="fig_4_d.svg", plot=image, width=10, height=8)
 
 
 # ------------
@@ -1555,7 +1585,7 @@ Cachexia %>% filter(Elapsed<=0) %>% group_by(Primary_Cancer) %>% count()
 ) %>% mutate(perc=n/n2))
 
 
-Cachexia %>% 
+image <- Cachexia %>% 
   ggplot(aes(fill=group, colour=group, x=Elapsed)) + 
   geom_density(alpha=0.5)  + 
    theme_minimal() + 
@@ -1566,7 +1596,7 @@ Cachexia %>%
   scale_colour_manual('Cachexia Criterion', values=c('firebrick', 'midnightblue')) 
 
 
-
+ ggsave(file="fig_sup4.svg", plot=image, width=10, height=8)
 
 
 data.frame(Cachexia %>% group_by(group, Primary_Cancer) %>% summarise(mean=mean(Elapsed)) %>%
